@@ -12,11 +12,15 @@ Python 3.10 or newer.
 
 ### Setup & Run
 1. Start by installing the required dependencies:
+```shell
 pip install -r requirements.txt
+```
 
 2. Add your text document and update its path in 'run-llm.py' as INPUT_DOCUMENT_PATH.
 
 3. Place your desired LLM in the models/LLM_NAME directory. Ensure that the path is updated in 'run-llm.py' under MODEL_PATH.
 
 4. Run the file:
+```shell
 python run-llm.py
+```
