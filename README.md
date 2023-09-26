@@ -24,3 +24,13 @@ pip install -r requirements.txt
 ```shell
 python run-llm.py
 ```
+  Note: It might take some time to run.
+
+5. Ask your query and wait for the LLM to respond!
+
+
+## Example 
+
+![image](https://github.com/mrunal-z/llm-qna-system/assets/79525611/8f16cfc7-06e0-4c70-9ef4-f9352e2e36e1)
+
+
