@@ -1,4 +1,5 @@
 #!/usr/bin/env python3
+import os
 import time
 from langchain.llms import GPT4All
 from langchain.embeddings import HuggingFaceEmbeddings
@@ -8,27 +9,36 @@ from langchain.vectorstores import Chroma
 from langchain.text_splitter import RecursiveCharacterTextSplitter
 from langchain.chains import RetrievalQA
 
+INPUT_DOCUMENT_PATH = "stellarcorp.txt"
+PERSIST_DIRECTORY = "db"
+MODEL_PATH = "models/ggml-gpt4all-j-v1.3-groovy.bin"
+EMBEDDINGS_MODEL_NAME = "all-MiniLM-L6-v2"
+
 # function to return loaded document with TextLoader
 def load_document(file_path: str) -> Document:
     loader = TextLoader(file_path)
     return loader.load()
 
-# load company document
-file = load_document('test_doc.txt')
+# initialize the HuggingFace embeddings
+embeddings = HuggingFaceEmbeddings(model_name=EMBEDDINGS_MODEL_NAME)
 
-# select which embeddings we want to use
-embeddings = HuggingFaceEmbeddings(model_name="all-MiniLM-L6-v2")
+# load the language model
+llm = GPT4All(model=MODEL_PATH, verbose=False, temp=0.2)
 
-# load the model
-model_path = 'models/ggml-gpt4all-j-v1.3-groovy.bin'
-llm = GPT4All(model=model_path, verbose=False, temp=0)
+# if no existing vectorstore for the document, create it
+if not os.path.exists(os.path.join(PERSIST_DIRECTORY, 'index')):
+    # load company document
+    file = load_document(INPUT_DOCUMENT_PATH)
 
-# split the document into chunks
-text_splitter = RecursiveCharacterTextSplitter(chunk_size=500, chunk_overlap=20)
-texts = text_splitter.split_documents(file)
+    # split the document into chunks
+    text_splitter = RecursiveCharacterTextSplitter(chunk_size=500, chunk_overlap=20)
+    texts = text_splitter.split_documents(file)
 
-# create the vectorstore to use as the index
-db = Chroma.from_documents(texts, embeddings, persist_directory='info_db')
+    # create the vectorstore
+    db = Chroma.from_documents(texts, embeddings, persist_directory=PERSIST_DIRECTORY)
+else:
+    # initialize existing vectorstore
+    db = Chroma(persist_directory=PERSIST_DIRECTORY, embedding_function=embeddings)
 
 # expose this index in a retriever interface
 retriever = db.as_retriever(search_type="similarity", search_kwargs={"k": 4})
